@@ -140,10 +140,9 @@ check_flag(int flag, int num){
         }
 }
 
-void // +
-colorCircle(Pix** image, unsigned int H, unsigned int W, int ox, int oy, long int* color, long int rad){
-    for (int x = -rad; x < rad; x++) { // проходим по всем значениям круга
-        int min_y = round(sqrt(rad * rad - x * x)); // значение y которое соответсвтует x на этой окружности
+void colorCircle(Pix** image, unsigned int height, unsigned int width, int cenX, int cenY, long int* color, long int radius){
+    for (int x = -radius; x < radius; x++) { // проходим по всем значениям круга
+        int min_y = round(sqrt(radius * radius - x * x)); // значение y которое соответсвтует x на этой окружности
         // Перед установкой цвета пикселя проверяется, находится ли он в пределах изображения.
         if ((x + cenX >= width) || (x + cenX < 0)) { // если выходит за границы изображения, пропускаем
             continue;
