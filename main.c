@@ -166,53 +166,34 @@ colorCircle(Pix** image, unsigned int H, unsigned int W, int ox, int oy, long in
 }
 
 void // +
-draw_line(Pix** image, unsigned int height, unsigned int width, long int start[2], long int end[2], long int color[3]) {
-    int x = start[0];
-    int y = start[1];
-    
-    const int deltaX = abs(end[0] - start[0]); // Вычисляем разность по x и по y
-    const int deltaY = abs(end[1] - start[1]);
-    int error = deltaX - deltaY; // Вычисляем начальное значение ошибки
-    
-    const int signX; // Определяем знаки для движения по x
-    if (start[0] < end[0]) {
-        signX = 1;
-    } 
-    else {
-        signX = -1;
-    }
-    
-    const int signY; // знак движенгия по y
-    if (start[1] < end[1]) {
-        signX = 1;
-    } 
-    else {
-        signX = -1;
-    }
-    
-    int error = deltaX - deltaY;
+void draw_line(Pix** image, unsigned int H, unsigned int W, long int start[2], long int end[2], long int color[3]) {
     int x = start[0];
     int y = start[1];
 
-    // Используем do-while для минимизации проверок условий в цикле
-    do {
-        if ((x >= 0) && (x < width) && (y >= 0) && (y < height)) {
-            setPixelColor(image, x, y, color);
+    const int deltaX = abs(end[0] - start[0]);
+    const int deltaY = abs(end[1] - start[1]);
+    const int signX = start[0] < end[0] ? 1 : -1;
+    const int signY = start[1] < end[1] ? 1 : -1;
+
+    int error = deltaX - deltaY;
+    int error2;
+
+    while (x != end[0] || y != end[1]) {
+        if (x >= 0 && x < W && y >= 0 && y < H) {
+            setPix(image, x, y, color);
         }
-        int error2 = error * 2;
-        
+
+        error2 = error * 2;
+
         if (error2 > -deltaY) {
             error -= deltaY;
             x += signX;
         }
+
         if (error2 < deltaX) {
             error += deltaX;
             y += signY;
         }
-    } while (x != end[0] || y != end[1]);
-    // Убедитесь, что последний пиксель (end) также закрашен
-    if ((x >= 0) && (x < width) && (y >= 0) && (y < height)) {
-        setPix(image, x, y, color);
     }
 }
 
