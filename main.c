@@ -142,30 +142,21 @@ check_flag(int flag, int num){
 
 void // +
 colorCircle(Pix** image, unsigned int H, unsigned int W, int ox, int oy, long int* color, long int rad){
-    for (int x = -rad; x < rad ; x++) { // пр
-        int height = round(sqrt(rad * rad - x * x));
-
-        if (x + ox >= W){
+    for (int x = -rad; x < rad; x++) { // проходим по всем значениям круга
+        int min_y = round(sqrt(rad * rad - x * x)); // значение y которое соответсвтует x на этой окружности
+        // Перед установкой цвета пикселя проверяется, находится ли он в пределах изображения.
+        if ((x + cenX >= width) || (x + cenX < 0)) { // если выходит за границы изображения, пропускаем
             continue;
         }
-        if (x + ox < 0){
-            continue;
-        }
-
-        for (int y = -height; y < height; y++) {
-            if (y + oy >= H){
+        for (int y = -min_y; y < min_y; y++) {
+            if ((y + cenY >= height) || (y + cenX < 0)) {
                 continue;
             }
-            if (y + oy < 0){
-                continue;
-            }
-            
-            setPix(image, x + ox, y + oy, color);
+            setPix(image, x + cenX, y + cenY, color);
         }
     }
-}
 
-void // +
+
 void draw_line(Pix** image, unsigned int H, unsigned int W, long int start[2], long int end[2], long int color[3]) {
     int x = start[0];
     int y = start[1];
