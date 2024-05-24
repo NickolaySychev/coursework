@@ -108,21 +108,21 @@ Rgb** readBmp(char file_name[], BitmapFileHeader* bmfh, BitmapInfoHeader* bmif) 
         //printf("Ошибка: Файл имеет непподерживаемый формат.\n");
         //exit(ERROR_FORMAT_FILE);
     // } почему то лагает сэ тим эээ блин
-    if (bmif->bitsPerPixel != 24) {
-        printf("Ошибка: На вход принимаются только 24 битные изображения.\n");
-        exit(ERROR_FORMAT_FILE);
-    }
-    if (bmif->compression != 0) {
-        printf("Ошибка: Изображение не должно быть сжатым.\n");
-        exit(ERROR_FORMAT_FILE);
-    }
+    //if (bmif->bitsPerPixel != 24) {
+       // printf("Ошибка: На вход принимаются только 24 битные изображения.\n");
+        //exit(ERROR_FORMAT_FILE);
+    //}
+    //if (bmif->compression != 0) {
+       // printf("Ошибка: Изображение не должно быть сжатым.\n");
+        //exit(ERROR_FORMAT_FILE);
+   // }
 
     unsigned int height = bmif->imageHeight;//берет высоту и ширину
     unsigned int width = bmif->imageWidth;
-    if (height > 65535 || width > 65535) {
-        printf("Ошибка: Изображение слишком большое.\n");
-        exit(ERROR_FORMAT_FILE);
-    }
+    //if (height > 65535 || width > 65535) {
+       // printf("Ошибка: Изображение слишком большое.\n");
+        //exit(ERROR_FORMAT_FILE);
+    //}
 
     Rgb** arr = malloc(height * sizeof(Rgb*)); //количество пикселей
     for (int i = 0; i < height; i++) { // по каждой высоте 
@@ -141,8 +141,8 @@ void writeBmp(char file_name[], Rgb** arr, int height, int width, BitmapFileHead
         exit(ERROR_OUTPUT_FILE);
     }
 
-    fwrite(&bmfh, sizeof(BitmapFileHeader), 1, file);
-    fwrite(&bmif, sizeof(BitmapInfoHeader), 1, file);
+    fwrite(&bmfh, sizeof(BitmapFileHeader),, file);
+    fwrite(&bmif, sizeof(BitmapInfoHeader), file);
     for (int i = 0; i < height; i++) {
         fwrite(arr[i], 1, width * sizeof(Rgb) + ((4 - (width * sizeof(Rgb)) % 4) % 4), file);
     }
@@ -156,6 +156,29 @@ void setPixelColor(Rgb** arr, int x, int y, long int* color) { // изменяе
     arr[y][x].b = color[0];
 }
 
+
+void drawCircle(Rgb** image, unsigned int height, unsigned int width, int cenX, int cenY, long int* color, long int radius) { // рисует окружность
+    for (int x = -radius; x < radius; x++) { // проходим по всем значениям круга
+        int min_y = round(sqrt(radius * radius - x * x)); // значение y которое соответсвтует x на этой окружности
+        // Перед установкой цвета пикселя проверяется, находится ли он в пределах изображения.
+        if (x + cenX >= width) {
+            continue;
+        }
+        if (x + cenX < 0) {
+            continue;
+        }
+
+        for (int y = -min_y; y < min_y; y++) {
+            if (y + cenY >= height) {
+                continue;
+            }
+            if (y + cenY < 0) {
+                continue;
+            }
+            setPixelColor(image, x + cenX, y + cenY, color);
+        }
+    }
+}
 
 // Алгоритм Брезенхэма. Идея заключается в итеративном обновлении координат x и y с учетом накопления ошибки.
 void drawLine(Rgb** image, unsigned int height, unsigned int width, long int start[2], long int end[2], long int color[3]) {
@@ -187,23 +210,6 @@ void drawLine(Rgb** image, unsigned int height, unsigned int width, long int sta
 }
 
 
-void drawCircle(Rgb** image, unsigned int height, unsigned int width, int cenX, int cenY, long int* color, long int radius) { // рисует окружность
-    for (int x = -radius; x < radius; x++) { // проходим по всем значениям круга
-        int min_y = round(sqrt(radius * radius - x * x)); // значение y которое соответсвтует x на этой окружности
-        // Перед установкой цвета пикселя проверяется, находится ли он в пределах изображения.
-        if ((x + cenX >= width) || (x + cenX < 0)) { // если выходит за границы изображения, пропускаем
-            continue;
-        }
-        for (int y = -min_y; y < min_y; y++) {
-            if ((y + cenY >= height) || (y + cenX < 0)) {
-                continue;
-            }
-            setPixelColor(image, x + cenX, y + cenY, color);
-        }
-    }
-}
-
-
 void writeLine(Rgb** image, unsigned int height, unsigned int width, long int startX, long int startY, long int endX, long int endY, long int color[3], long int thickness) {
     int radius = round(thickness / 2);
 
@@ -231,9 +237,10 @@ void writeLine(Rgb** image, unsigned int height, unsigned int width, long int st
         // Создаются два наконечника стрелок
         long int startFirst[] = { round(startX - radius * delta[1]), round(startY + radius * delta[0]) - 1 }; // startFirst хранят начальные координаты для первого наконечника
         long int endFirst[] = { round(endX - radius * delta[1]), round(endY + radius * delta[0]) - 1 }; // endFirst хранят  конечные координаты для первого наконечника
+        drawLine(image, height, width, startFirst, endFirst, color);
+
         long int startSecond[] = { round(startX + radius * delta[1]), round(startY - radius * delta[0]) - 1 };
         long int endSecond[] = { round(endX + radius * delta[1]), round(endY - radius * delta[0]) - 1 };
-        drawLine(image, height, width, startFirst, endFirst, color);
 
         const int deltaX = abs(startSecond[0] - startFirst[0]);
         const int deltaY = abs(startSecond[1] - startFirst[1]);
@@ -246,8 +253,8 @@ void writeLine(Rgb** image, unsigned int height, unsigned int width, long int st
         int y = startFirst[1];
 
         while ((x != startSecond[0]) || (y != startSecond[1])) {
-            long int start[] = { x, y };
-            long int end[] = { x + dif[0], y + dif[1] };
+            long int start[] = {x, y};
+            long int end[] = {x + dif[0], y + dif[1]};
             drawLine(image, height, width, start, end, color);
 
             if ((abs(delta[0]) <= 0.6) && ((start[0] < startSecond[0] - 1) || (start[0] < startFirst[0]))) {
