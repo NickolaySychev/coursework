@@ -39,9 +39,9 @@ typedef struct { // определение структуры BitmapInfoHeader
 } BitmapInfoHeader;
 
 typedef struct { // структура для rgb
-    unsigned char b;
-    unsigned char g;
     unsigned char r;
+    unsigned char g;
+    unsigned char b;
 } Rgb;
 
 #pragma pack(pop) // включаем выравнивание
@@ -104,10 +104,10 @@ Rgb** readBmp(char file_name[], BitmapFileHeader* bmfh, BitmapInfoHeader* bmif) 
     }
 
     fread(bmif, 1, sizeof(BitmapInfoHeader), file); //проверка инфохедера
-    if (bmif->headerSize != 40) {
-        printf("Ошибка: Файл имеет непподерживаемый формат.\n");
-        exit(ERROR_FORMAT_FILE);
-    }
+    //if (bmif->headerSize != 40) {
+        //printf("Ошибка: Файл имеет непподерживаемый формат.\n");
+        //exit(ERROR_FORMAT_FILE);
+    // } почему то лагает сэ тим эээ блин
     if (bmif->bitsPerPixel != 24) {
         printf("Ошибка: На вход принимаются только 24 битные изображения.\n");
         exit(ERROR_FORMAT_FILE);
@@ -151,9 +151,9 @@ void writeBmp(char file_name[], Rgb** arr, int height, int width, BitmapFileHead
 
 
 void setPixelColor(Rgb** arr, int x, int y, long int* color) { // изменяет цвет пикселя в заданном местоположении двумерного массива
-    arr[y][x].b = color[0];
-    arr[y][x].g = color[1];
     arr[y][x].r = color[2];
+    arr[y][x].g = color[1];
+    arr[y][x].b = color[0];
 }
 
 
