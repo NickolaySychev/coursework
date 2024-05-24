@@ -386,10 +386,6 @@ int main(int argc, char** argv) {
     int mark_f_out = 0;
 
     struct option long_options1[] = {
-        {"input", required_argument, 0, 'i'},
-        {"output", required_argument, 0, 'o'},
-        {"info", no_argument, 0, 'I'},
-        {"help", no_argument, 0, 'h'},
         {"line", no_argument, 0, 'l'},
         {"start", required_argument, 0, 's'},
         {"end", required_argument, 0, 'e'},
@@ -401,11 +397,104 @@ int main(int argc, char** argv) {
         {"trim", no_argument, 0, 'T'},
         {"left_up", required_argument, 0, 'L'},
         {"right_down", required_argument, 0, 'R'},
+        {"input", required_argument, 0, 'i'},
+        {"output", required_argument, 0, 'o'},
+        {"info", no_argument, 0, 'I'},
+        {"help", no_argument, 0, 'h'},
         {0, 0, 0, 0}
     };
 
     while ((c = getopt_long(argc, argv, "ls:e:c:t:vC:r:TL:R:i:o:Ih", long_options1, &optind)) != -1) {
         switch (c) {
+        case 'l':
+            lin += 1;
+            break;
+        case 'v':
+            inv_c += 1;
+            break;
+        case 'T':
+            trm += 1;
+            break;
+        case 's':
+            lin += 1;
+            if (strstr(optarg, ".") == NULL) { //проверка наличия значения для аргумента
+                printf("Invalid input value.\n");
+                return 42;
+            }
+            line.start[0] = strtol(strtok(optarg, "."), NULL, 10);
+            line.start[1] = strtol(strtok(NULL, "."), NULL, 10);
+            break;
+        case 'e':
+            lin += 1;
+            if (strstr(optarg, ".") == NULL) { //проверка наличия значения для аргумента
+                printf("Invalid input value.\n");
+                return 42;
+            }
+            line.end[0] = strtol(strtok(optarg, "."), NULL, 10);
+            line.end[1] = strtol(strtok(NULL, "."), NULL, 10);
+            break;
+        case 'c':
+            lin += 1;
+            if (strstr(optarg, ".") == NULL) {
+                printf("Invalid input value.\n");
+                return 42;
+            }
+            inpstr = strtok(optarg, ".");
+            int count = 1;
+            while (inpstr != NULL) {
+                if (strtol(inpstr, NULL, 10) < 0 || strtol(inpstr, NULL, 10) > 255 || (strtol(inpstr, NULL, 10) == 0 && strcmp(inpstr, "0") != 0)) {
+                    printf("Invalid input value.\n");
+                    return 42;
+                }
+                line.color[i] = strtol(inpstr, NULL, 10);
+                i += 1;
+                inpstr = strtok(NULL, ".");
+                count += 1;
+                if (inpstr == NULL && count != 4) {
+                    printf("Invalid input value.\n");
+                    return 42;
+                }
+            }
+            break;
+        case 't':
+            lin += 1;
+            if (strtol(optarg, NULL, 10) < 0 || strcmp(optarg, "0") == 0) {
+                printf("Invalid input value.\n");
+                return 42;
+            }
+            line.thickness = strtol(optarg, NULL, 10);
+            break;
+        case 'C':
+            inv_c += 1;
+            if (strstr(optarg, ".") == NULL) {
+                printf("Invalid input value.\n");
+                return 42;
+            }
+            inverse_circle.center[0] = strtol(strtok(optarg, "."), NULL, 10);
+            inverse_circle.center[1] = strtol(strtok(NULL, "."), NULL, 10);
+            break;
+        case 'r':
+            inv_c += 1;
+            inverse_circle.radius = strtol(optarg, NULL, 10);
+            break;
+        case 'L':
+            trm += 1;
+            if (strstr(optarg, ".") == NULL) {
+                printf("Invalid input value.\n");
+                return 42;
+            }
+            trim.leftUp[0] = strtol(strtok(optarg, "."), NULL, 10);
+            trim.leftUp[1] = strtol(strtok(NULL, "."), NULL, 10);
+            break;
+        case 'R':
+            trm += 1;
+            if (strstr(optarg, ".") == NULL) {
+                printf("Invalid input value.\n");
+                return 42;
+            }
+            trim.rightDown[0] = strtol(strtok(optarg, "."), NULL, 10);
+            trim.rightDown[1] = strtol(strtok(NULL, "."), NULL, 10);
+            break;
         case 'i':
             filename = realloc(filename, (strlen(optarg) + 1) * sizeof(char));
             strcpy(filename, optarg);
@@ -422,97 +511,8 @@ int main(int argc, char** argv) {
         case 'h':
             printHelp();
             return 0;
-        case 'l':
-            lin += 1;
-            break;
-        case 'v':
-            inv_c += 1;
-            break;
-        case 'T':
-            trm += 1;
-            break;
-        case 's':
-            lin += 1;
-            if (strstr(optarg, ".") == NULL) { //проверка наличия значения для аргумента
-                printf("Ошибка: Недопустимое входное значение.\n");
-                return 42;
-            }
-            line.start[0] = strtol(strtok(optarg, "."), NULL, 10);
-            line.start[1] = strtol(strtok(NULL, "."), NULL, 10);
-            break;
-        case 'e':
-            lin += 1;
-            if (strstr(optarg, ".") == NULL) { //проверка наличия значения для аргумента
-                printf("Ошибка: Недопустимое входное значение.\n");
-                return 42;
-            }
-            line.end[0] = strtol(strtok(optarg, "."), NULL, 10);
-            line.end[1] = strtol(strtok(NULL, "."), NULL, 10);
-            break;
-        case 'c':
-            lin += 1;
-            if (strstr(optarg, ".") == NULL) {
-                printf("Ошибка: Недопустимое входное значение.\n");
-                return 42;
-            }
-            inpstr = strtok(optarg, ".");
-            int count = 1;
-            while (inpstr != NULL) {
-                if (strtol(inpstr, NULL, 10) < 0 || strtol(inpstr, NULL, 10) > 255 || (strtol(inpstr, NULL, 10) == 0 && strcmp(inpstr, "0") != 0)) {
-                    printf("Ошибка: Недопустимое входное значение.\n");
-                    return 42;
-                }
-                line.color[i] = strtol(inpstr, NULL, 10);
-                i += 1;
-                inpstr = strtok(NULL, ".");
-                count += 1;
-                if (inpstr == NULL && count != 4) {
-                    printf("Ошибка: Недопустимое входное значение.\n");
-                    return 42;
-                }
-            }
-            break;
-        case 't':
-            lin += 1;
-            if (strtol(optarg, NULL, 10) < 0 || strcmp(optarg, "0") == 0) {
-                printf("Ошибка: Недопустимое входное значение.\n");
-                return 42;
-            }
-            line.thickness = strtol(optarg, NULL, 10);
-            break;
-        case 'C':
-            inv_c += 1;
-            if (strstr(optarg, ".") == NULL) {
-                printf("Ошибка: Недопустимое входное значение.\n");
-                return 42;
-            }
-            inverse_circle.center[0] = strtol(strtok(optarg, "."), NULL, 10);
-            inverse_circle.center[1] = strtol(strtok(NULL, "."), NULL, 10);
-            break;
-        case 'r':
-            inv_c += 1;
-            inverse_circle.radius = strtol(optarg, NULL, 10);
-            break;
-        case 'L':
-            trm += 1;
-            if (strstr(optarg, ".") == NULL) {
-                printf("Ошибка: Недопустимое входное значение.\n");
-                return 42;
-            }
-            trim.leftUp[0] = strtol(strtok(optarg, "."), NULL, 10);
-            trim.leftUp[1] = strtol(strtok(NULL, "."), NULL, 10);
-            break;
-        case 'R':
-            trm += 1;
-            if (strstr(optarg, ".") == NULL) {
-                printf("Ошибка: Недопустимое входное значение.\n");
-                return 42;
-            }
-            trim.rightDown[0] = strtol(strtok(optarg, "."), NULL, 10);
-            trim.rightDown[1] = strtol(strtok(NULL, "."), NULL, 10);
-            break;
         default:
-            printf("Ошибка: Неизвестный параметр или отсутствующий аргумент.\n");
+            printf("Unknown option or missing argument.\n");
             return ERROR_UNKNOWN_OPTION_OR_MIS_ARGUM;
         }
     }
@@ -532,7 +532,6 @@ int main(int argc, char** argv) {
             strcpy(output_file, "out.bmp");
             strcpy(filename, argv[optind]);
         }
-
         if (strcmp(filename, output_file) == 0) {
             printf("Ошибка: Одинакове название входного и выходного файлов.\n");
             return ERROR_SAME_INPUT_OUTPUT;
@@ -599,11 +598,9 @@ int main(int argc, char** argv) {
 
     free(filename);
     free(output_file);
-
     for (unsigned int k = 0; k < bmif->imageHeight - 1; k++) {
         free(image[k]);
     }
-
     free(image);
     free(bmfh);
     free(bmif);
